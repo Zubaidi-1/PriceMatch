@@ -82,6 +82,7 @@ function App() {
           <label className="flex flex-col">
             <span className="text-[#A5C882]">Kit Price</span>
             <input
+              type="number"
               onChange={handleKitPriceChange}
               className="rounded-lg h-8 border-2 text-center border-[#A5C882]"
             />
@@ -91,6 +92,12 @@ function App() {
             <span className="text-[#A5C882] mt-5">
               Deduction Amount is: ${deduction}
             </span>
+            <button
+              onClick={() => location.reload()}
+              className="bg-[#A5C882] text-[#1E152A] rounded-full mt-5 w-16 self-center"
+            >
+              Clear
+            </button>
           </label>
         </div>
 
@@ -129,16 +136,18 @@ function App() {
         </div>
 
         {/* Refund selector */}
-        <div className="justify-self-center self-center">
+        <div className="flex flex-wrap justify-self-center self-center">
           <label className="flex flex-col">
             <span className="ml-2 text-[#A5C882]">Refund?</span>
-            {Array.from({ length: 25 }).map((_, i) => (
-              <RefundSelector
-                check={selectedIndices.includes(i)}
-                onCheck={() => handleChange(i)}
-                key={i}
-              />
-            ))}
+            <div className="flex flex-col">
+              {Array.from({ length: 25 }).map((_, i) => (
+                <RefundSelector
+                  check={selectedIndices.includes(i)}
+                  onCheck={() => handleChange(i)}
+                  key={i}
+                />
+              ))}
+            </div>
           </label>
         </div>
       </div>
