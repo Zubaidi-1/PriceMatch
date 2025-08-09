@@ -5,7 +5,7 @@ const RefundPartPrices = forwardRef(function ({ value }, ref) {
     <input
       ref={ref}
       value={value}
-      className="rounded-lg h-8 text-center border-2 border-[#A5C882] mb-8 mt-1"
+      className="rounded-lg h-8 text-center border-2 border-[#7f95d1] mb-8 mt-1"
       readOnly
     ></input>
   );

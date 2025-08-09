@@ -18,7 +18,7 @@ const RefundSelector = forwardRef(function ({ onCheck, check }, ref) {
         ref={ref}
         checked={check}
         onChange={handleCheck}
-        className="mb-8 mt-1 appearance-none h-8 w-8 border-2 border-[#A5C882] rounded-md checked:bg-[#A5C882] focus:outline-none focus:ring-2 cursor-pointer"
+        className="mb-8 mt-1 appearance-none h-8 w-8 border-2 border-[#7f95d1] rounded-md checked:bg-[#7f95d1] focus:outline-none focus:ring-2 cursor-pointer"
       />
     </label>
   );

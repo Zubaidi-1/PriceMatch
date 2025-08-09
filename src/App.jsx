@@ -9,9 +9,16 @@ function App() {
   const [partPriceTotal, setPartPriceTotal] = useState(Array(25).fill(0));
   const [ratio, setRatio] = useState(1);
   const [selectedIndices, setSelectedIndices] = useState([]);
-  const [refund, setRefund] = useState(0);
-  const [deduction, setDeduction] = useState(0);
+  const [refund, setRefund] = useState(0); // keep as number
+  const [deduction, setDeduction] = useState(0); // keep as number
   const [kitPrice, setKitPrice] = useState(0);
+  const [message, setMessage] = useState("");
+
+  // ✅ Load counter once from localStorage
+  const [counter, setCounter] = useState(() => {
+    const saved = localStorage.getItem("counter");
+    return Number.isFinite(Number(saved)) ? Number(saved) : 0;
+  });
 
   const handleChange = (index) => {
     setSelectedIndices((prevSelected) =>
@@ -25,21 +32,37 @@ function App() {
     handleRefundDeduct();
   }, [selectedIndices, partPriceTotal, kitPrice]);
 
+  // ✅ derive message from refund without causing render loops
+  useEffect(() => {
+    const r = Number(refund) || 0;
+    if (r >= 200) {
+      setMessage(`Such a charitable work, ${r.toFixed(2)} ??`);
+    } else if (r >= 100) {
+      setMessage(`${r.toFixed(2)} ? A bit much don't you think?`);
+    } else if (r > 0 && r <= 50) {
+      setMessage(`Only ${r.toFixed(2)} ? How is the customer dealing with it?`);
+    } else if (r === 0) {
+      setMessage(``);
+    } else {
+      setMessage(`A refund of ${r.toFixed(2)}, are you sure about that?`);
+    }
+  }, [refund]);
+
   const handleRefundDeduct = () => {
     if (selectedIndices.length > 0) {
-      const refundTotal = selectedIndices.reduce(
-        (accumulator, currentValue) => {
-          console.log(refundAmount(currentValue));
+      const refundTotal = selectedIndices.reduce((acc, idx) => {
+        return acc + Number(refundAmountRaw(idx));
+      }, 0);
 
-          return accumulator + Number(refundAmount(currentValue));
-        },
-        0
-      );
+      const refundRounded = Number(refundTotal.toFixed(2));
+      setRefund(refundRounded);
 
-      setRefund(refundTotal.toFixed(2));
-      kitPrice
-        ? setDeduction((kitPrice - refundTotal).toFixed(2))
-        : setDeduction(0);
+      if (kitPrice) {
+        const deductionVal = Number((kitPrice - refundTotal).toFixed(2));
+        setDeduction(deductionVal);
+      } else {
+        setDeduction(0);
+      }
     } else {
       setRefund(0);
       setDeduction(0);
@@ -47,14 +70,11 @@ function App() {
   };
 
   const handlePriceChange = (value, index) => {
-    const updatedPrices = [...partPriceTotal];
-    updatedPrices[index] = value;
-    setPartPriceTotal(updatedPrices);
+    const updated = [...partPriceTotal];
+    updated[index] = value;
+    setPartPriceTotal(updated);
 
-    const sum = updatedPrices.reduce(
-      (accumulator, currentValue) => accumulator + Number(currentValue),
-      0
-    );
+    const sum = updated.reduce((acc, cur) => acc + Number(cur), 0);
     setRatio(sum !== 0 && kitPrice !== 0 ? kitPrice / sum : 0);
   };
 
@@ -62,39 +82,46 @@ function App() {
     const value = Number(e.target.value);
     setKitPrice(value);
 
-    const sum = partPriceTotal.reduce(
-      (accumulator, currentValue) => accumulator + Number(currentValue),
-      0
-    );
+    const sum = partPriceTotal.reduce((acc, cur) => acc + Number(cur), 0);
     setRatio(sum !== 0 && value !== 0 ? value / sum : 0);
   };
 
-  const refundAmount = (index) => {
-    return (Number(partPriceTotal[index]) * ratio).toFixed(2);
-  };
+  // raw numeric refund for an index
+  const refundAmountRaw = (index) => Number(partPriceTotal[index]) * ratio;
+
+  // formatted for display in the list
+  const refundAmount = (index) => refundAmountRaw(index).toFixed(2);
 
   return (
-    <div className="bg-[#1E152A] min-h-screen">
-      <div className="text-[#A5C882] text-4xl">Price Match</div>
+    <div className="bg-[#000] min-h-screen">
+      <div className="text-[#7f95d1] text-4xl">Price Match</div>
       <div className="grid grid-cols-5 gap-8 mt-5">
         {/* Kit Price */}
         <div className="justify-self-center self-start">
           <label className="flex flex-col">
-            <span className="text-[#A5C882]">Kit Price</span>
+            <span className="text-[#7f95d1]">Kit Price</span>
             <input
               type="number"
               onChange={handleKitPriceChange}
-              className="rounded-lg h-8 border-2 text-center border-[#A5C882]"
+              className="rounded-lg h-8 border-2 text-center border-[#7f95d1]"
             />
-            <span className="text-[#A5C882] mt-5">
-              Refund Amount is: ${refund}
+            <span className="text-[#7f95d1] mt-5">
+              Refund Amount is: ${refund.toFixed(2)}
             </span>
-            <span className="text-[#A5C882] mt-5">
-              Deduction Amount is: ${deduction}
+            <span className="text-[#7f95d1] mt-2">
+              Deduction Amount is: ${deduction.toFixed(2)}
+            </span>
+            <span className="text-[#7f95d1] mt-2">{message}</span>
+            <span className="text-[#7f95d1] mt-5">
+              Price Matches done = {counter}
             </span>
             <button
-              onClick={() => location.reload()}
-              className="bg-[#A5C882] text-[#1E152A] rounded-full mt-5 w-16 self-center"
+              onClick={() => {
+                const newValue = counter + 1;
+                localStorage.setItem("counter", String(newValue));
+                location.reload(); // keep the reload behavior
+              }}
+              className="bg-[#7f95d1] text-[#1E152A] rounded-full mt-5 w-16 self-center"
             >
               Clear
             </button>
@@ -104,7 +131,7 @@ function App() {
         {/* Part Numbers */}
         <div className="justify-self-center self-center">
           <label className="flex flex-col">
-            <span className="text-[#A5C882]">Part Number</span>
+            <span className="text-[#7f95d1]">Part Number</span>
             {Array.from({ length: 25 }).map((_, i) => (
               <PartNumbers key={i} />
             ))}
@@ -114,7 +141,7 @@ function App() {
         {/* Part Prices */}
         <div className="justify-self-center self-center">
           <label className="flex flex-col">
-            <span className="text-[#A5C882]">Part Price</span>
+            <span className="text-[#7f95d1]">Part Price</span>
             {Array.from({ length: 25 }).map((_, i) => (
               <PartPrices
                 onPartPriceChange={handlePriceChange}
@@ -128,7 +155,7 @@ function App() {
         {/* Refund amounts */}
         <div className="justify-self-center self-center">
           <label className="flex flex-col">
-            <span className="text-[#A5C882]">Amount to Refund</span>
+            <span className="text-[#7f95d1]">Amount to Refund</span>
             {Array.from({ length: 25 }).map((_, i) => (
               <RefundPartPrices value={refundAmount(i)} key={i} />
             ))}
@@ -138,7 +165,7 @@ function App() {
         {/* Refund selector */}
         <div className="flex flex-wrap justify-self-center self-center">
           <label className="flex flex-col">
-            <span className="ml-2 text-[#A5C882]">Refund?</span>
+            <span className="ml-2 text-[#7f95d1]">Refund?</span>
             <div className="flex flex-col">
               {Array.from({ length: 25 }).map((_, i) => (
                 <RefundSelector
