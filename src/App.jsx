@@ -10,7 +10,7 @@ function App() {
     <div className="bg-black h-screen flex flex-col gap-10 justify-center items-center">
       <h1 className="text-white text-3xl">
         Your beloved Price matching sheet has resigned and it wishes that you
-        work betetr
+        work better
       </h1>
       <div>
         <img src={tomb} />
