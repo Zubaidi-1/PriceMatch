@@ -12,9 +12,7 @@ function App() {
         Your beloved Price matching sheet has resigned and it wishes that you
         work better
       </h1>
-      <div>
-        <img src={tomb} />
-      </div>
+      <div></div>
     </div>
   );
 }
